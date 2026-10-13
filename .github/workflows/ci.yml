@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  web:
+    name: Next.js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm run lint
+
+      # The build is the gate that matters: `tsc` and `eslint` both pass on a
+      # "use server" file that exports a non-function, but the bundler rejects
+      # it and every action in the module disappears at runtime.
+      - run: npm run build
+        env:
+          SESSION_SECRET: ci-only-placeholder-not-a-real-secret
+          INTERNAL_API_TOKEN: ci-only-placeholder-not-a-real-secret
+
+  api:
+    name: Django
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install django
+
+      - run: python manage.py check
+        working-directory: backend
+        env:
+          DJANGO_SECRET_KEY: ci-only-placeholder-not-a-real-secret
+          INTERNAL_API_TOKEN: ci-only-placeholder-not-a-real-secret

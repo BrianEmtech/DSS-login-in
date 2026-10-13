@@ -1,0 +1,37 @@
+# Local dev services. Testing only — not a production topology.
+#
+# Postgres 16 is pinned because that's what you're validating against. If the
+# backend later needs a feature only in 17+, change the tag here and re-run
+# migrations before trusting anything.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dss-db
+    environment:
+      POSTGRES_DB: dss
+      POSTGRES_USER: dss
+      POSTGRES_PASSWORD: dss
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Django waits on this before migrating, otherwise the first `migrate`
+      # after a cold start fails on a connection refused.
+      test: ["CMD-SHELL", "pg_isready -U dss -d dss"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: dss-mailpit
+    ports:
+      - "8025:8025" # web UI
+      - "1025:1025" # SMTP
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+volumes:
+  pgdata:

@@ -1,0 +1,5 @@
+# Deliberately minimal for the login round-trip test. Add djangorestframework
+# when you start building the domain API, not before.
+Django>=5.2,<6.0
+psycopg[binary]>=3.2
+python-dotenv>=1.0

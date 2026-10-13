@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The Python side. Without this, ESLint walks into the virtualenv and
+    // lints django.contrib.admin's vendored jQuery/select2/xregexp bundles,
+    // which drowns the app's own output in ~1500 irrelevant problems.
+    "backend/**",
   ]),
 ]);
 
